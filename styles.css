@@ -945,33 +945,6 @@
 }
 
 /* ------------------------------------------------------------------
-   Scrollbars
-   ------------------------------------------------------------------ */
-
-.ff-sidebar::-webkit-scrollbar,
-.ff-canvas::-webkit-scrollbar,
-.ff-table-wrap::-webkit-scrollbar,
-.ff-grid::-webkit-scrollbar,
-.ff-chart-wrap::-webkit-scrollbar {
-	width: 8px;
-	height: 8px;
-}
-
-.ff-sidebar::-webkit-scrollbar-thumb,
-.ff-canvas::-webkit-scrollbar-thumb,
-.ff-table-wrap::-webkit-scrollbar-thumb,
-.ff-grid::-webkit-scrollbar-thumb,
-.ff-chart-wrap::-webkit-scrollbar-thumb {
-	background: var(--background-modifier-border);
-	border-radius: 999px;
-}
-
-.ff-sidebar::-webkit-scrollbar-thumb:hover,
-.ff-canvas::-webkit-scrollbar-thumb:hover {
-	background: var(--background-modifier-border-hover);
-}
-
-/* ------------------------------------------------------------------
    Responsive
    ------------------------------------------------------------------ */
 
