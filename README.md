@@ -85,4 +85,4 @@ src/
 
 ## License
 
-MIT
+MIT © 2026 Kerekes Stefan
