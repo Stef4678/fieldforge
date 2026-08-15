@@ -16,6 +16,15 @@ you write a query, then render it. FieldForge flips that — you just *pick* fie
 
 The view re-forges instantly on every change. No query syntax, no code blocks.
 
+## Screenshots
+
+| | |
+|---|---|
+| ![Pivot table view](assets/screenshot-1.png) | ![Bar chart view](assets/screenshot-2.png) |
+| *Pivot table with heatmap cells* | *Grouped bar chart* |
+| ![Trend view](assets/screenshot-3.png) | ![Donut view](assets/screenshot-4.png) |
+| *Files created over time* | *Share of totals per group* |
+
 ## Features
 
 - **Pivot table** with per-column heatmap coloring, row/column totals, hover tooltips
