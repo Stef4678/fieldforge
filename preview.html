@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FieldForge — Design Preview</title>
+<link rel="stylesheet" href="styles.css" />
+<style>
+  /* ---- Standalone preview: define Obsidian design tokens outside Obsidian ---- */
+  body.ff-preview {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Inter, Roboto, sans-serif;
+    background: var(--background-primary);
+    color: var(--text-normal);
+    height: 100vh;
+    overflow: hidden;
+  }
+  .ff-preview[data-theme="dark"] {
+    --background-primary: #17191f;
+    --background-primary-alt: #1d2027;
+    --background-secondary: #1b1e25;
+    --background-secondary-alt: #22252e;
+    --background-modifier-hover: rgba(255, 255, 255, 0.055);
+    --background-modifier-active-hover: rgba(255, 255, 255, 0.09);
+    --background-modifier-border: rgba(255, 255, 255, 0.12);
+    --background-modifier-border-hover: rgba(255, 255, 255, 0.22);
+    --interactive-accent: #7c6cf0;
+    --interactive-accent-hover: #9387f5;
+    --text-normal: #e6e6ef;
+    --text-muted: #a2a3b3;
+    --text-faint: #6f7085;
+    --text-on-accent: #ffffff;
+    --shadow-s: 0 1px 2px rgba(0, 0, 0, 0.25), 0 4px 14px rgba(0, 0, 0, 0.18);
+  }
+  .ff-preview[data-theme="light"] {
+    --background-primary: #ffffff;
+    --background-primary-alt: #f7f7fb;
+    --background-secondary: #f4f4f9;
+    --background-secondary-alt: #ececf4;
+    --background-modifier-hover: rgba(0, 0, 0, 0.05);
+    --background-modifier-active-hover: rgba(0, 0, 0, 0.08);
+    --background-modifier-border: rgba(0, 0, 0, 0.12);
+    --background-modifier-border-hover: rgba(0, 0, 0, 0.22);
+    --interactive-accent: #6c5ce7;
+    --interactive-accent-hover: #5a4bd4;
+    --text-normal: #2b2b36;
+    --text-muted: #6b6b7d;
+    --text-faint: #9b9bb0;
+    --text-on-accent: #ffffff;
+    --shadow-s: 0 1px 2px rgba(0, 0, 0, 0.05), 0 4px 14px rgba(0, 0, 0, 0.06);
+  }
+  .ff-preview-shell { display: flex; height: 100vh; flex-direction: column; }
+  .ff-preview-toggle {
+    position: fixed; top: 14px; right: 14px; z-index: 50;
+    padding: 6px 12px; font-size: 12px; border-radius: 999px;
+    border: 1px solid var(--background-modifier-border);
+    background: var(--background-secondary); color: var(--text-muted); cursor: pointer;
+  }
+  .ff-preview-toggle:hover { color: var(--text-normal); border-color: var(--interactive-accent); }
+</style>
+</head>
+<body class="ff-preview" data-theme="dark">
+<button class="ff-preview-toggle" id="themeToggle">☀ Light</button>
+
+<div class="ff-root" style="height:100vh">
+
+  <!-- ============ Header ============ -->
+  <div class="ff-header">
+    <div class="ff-logo">FF</div>
+    <div class="ff-titles">
+      <div class="ff-title">FieldForge</div>
+      <div class="ff-subtitle">Pivot your vault's properties — no queries needed</div>
+    </div>
+    <div class="ff-actions">
+      <span class="ff-header-stats">148 files</span>
+      <button class="ff-btn ff-btn-ghost ff-btn-icon-lg" title="Rescan vault">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+      </button>
+      <button class="ff-btn ff-btn-ghost ff-btn-icon-lg" title="Copy as Markdown table">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="14" height="14" rx="2"/><path d="M16 8v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h12"/></svg>
+      </button>
+      <button class="ff-btn ff-btn-ghost ff-btn-icon-lg" title="Export CSV">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="ff-body">
+    <!-- ============ Sidebar ============ -->
+    <div class="ff-sidebar">
+
+      <div class="ff-section">
+        <div class="ff-section-title">Vault</div>
+        <div class="ff-stats">
+          <div class="ff-stat"><div class="ff-stat-value">148</div><div class="ff-stat-label">files</div></div>
+          <div class="ff-stat"><div class="ff-stat-value">12</div><div class="ff-stat-label">properties</div></div>
+        </div>
+        <button class="ff-btn ff-btn-ghost">Rescan vault</button>
+      </div>
+
+      <div class="ff-section">
+        <div class="ff-section-title"><span class="ff-section-icon"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></span>Rows</div>
+        <select class="ff-select">
+          <option>Type</option><option>Status</option><option>Folder</option><option selected>Tags</option>
+        </select>
+      </div>
+
+      <div class="ff-section">
+        <div class="ff-section-title"><span class="ff-section-icon"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h6M14 6h6M4 12h6M14 12h6M4 18h6M14 18h6"/></svg></span>Columns</div>
+        <select class="ff-select"><option>— single column —</option><option selected>Status</option><option>Year</option></select>
+      </div>
+
+      <div class="ff-section">
+        <div class="ff-section-title"><span class="ff-section-icon"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a2 2 0 0 0 0-4h-1.42a7.9 7.9 0 0 0 0-4H18a2 2 0 0 0 0-4z"/></svg></span>Values</div>
+        <select class="ff-select"><option selected>Count of files</option><option>Rating</option><option>Words</option></select>
+        <div class="ff-seg">
+          <button class="is-active">count</button><button>sum</button><button disabled>avg</button><button disabled>min</button><button disabled>max</button><button>distinct</button>
+        </div>
+      </div>
+
+      <div class="ff-section">
+        <div class="ff-section-title"><span class="ff-section-icon"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg></span>Filters</div>
+        <div class="ff-filter-row">
+          <select class="ff-select ff-filter-field"><option>Status</option><option>Type</option></select>
+          <select class="ff-select ff-filter-op"><option>=</option><option>≠</option><option>contains</option></select>
+          <input class="ff-input ff-filter-value" type="text" placeholder="value" value="Read" />
+          <button class="ff-btn ff-btn-icon"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+        </div>
+        <div class="ff-filter-row">
+          <select class="ff-select ff-filter-field"><option>Type</option><option>Year</option></select>
+          <select class="ff-select ff-filter-op"><option>exists</option><option>is empty</option></select>
+          <input class="ff-input ff-filter-value ff-hidden" type="text" placeholder="value" />
+          <button class="ff-btn ff-btn-icon"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+        </div>
+        <button class="ff-btn ff-btn-outline">+ Add filter</button>
+      </div>
+
+      <div class="ff-section">
+        <div class="ff-section-title"><span class="ff-section-icon"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 7h10M7 12h10M7 17h6"/></svg></span>Sort &amp; Limit</div>
+        <select class="ff-select">
+          <option selected>Biggest value first</option><option>Smallest value first</option>
+          <option>Name A → Z</option><option>Name Z → A</option>
+        </select>
+        <div class="ff-inline">
+          <span class="ff-label">Rows</span>
+          <input class="ff-input ff-input-sm" type="number" min="3" max="200" value="20" />
+        </div>
+      </div>
+
+      <div class="ff-section">
+        <div class="ff-section-title"><span class="ff-section-icon"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg></span>Totals</div>
+        <label class="ff-check"><input type="checkbox" checked /> Row totals</label>
+        <label class="ff-check"><input type="checkbox" checked /> Column totals</label>
+      </div>
+
+      <div class="ff-footer-hint">Every change re-forges the view instantly. Click a cell to open its notes.</div>
+    </div>
+
+    <!-- ============ Main ============ -->
+    <div class="ff-main">
+      <div class="ff-tabs">
+        <button class="ff-tab is-active" data-tab="pivot"><span class="ff-tab-icon"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg></span>Pivot</button>
+        <button class="ff-tab" data-tab="bar"><span class="ff-tab-icon"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg></span>Bars</button>
+        <button class="ff-tab" data-tab="scatter"><span class="ff-tab-icon"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="6" cy="6" r="2.5"/><circle cx="16" cy="8" r="2.5"/><circle cx="10" cy="17" r="2.5"/><circle cx="19" cy="16" r="2.5"/></svg></span>Scatter</button>
+        <button class="ff-tab" data-tab="trend"><span class="ff-tab-icon"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg></span>Trend</button>
+        <button class="ff-tab" data-tab="donut"><span class="ff-tab-icon"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg></span>Donut</button>
+        <button class="ff-tab" data-tab="data"><span class="ff-tab-icon"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg></span>Data</button>
+      </div>
+
+      <div class="ff-canvas">
+        <!-- ===== Pivot panel ===== -->
+        <div class="ff-panel" data-panel="pivot">
+          <div class="ff-table-wrap">
+            <table class="ff-table">
+              <thead><tr>
+                <th class="ff-corner">Type</th>
+                <th class="ff-colhead">Read</th>
+                <th class="ff-colhead">In progress</th>
+                <th class="ff-colhead">Queue</th>
+                <th class="ff-colhead ff-total-head">Total</th>
+              </tr></thead>
+              <tbody>
+                <tr>
+                  <td class="ff-rowhead">Article</td>
+                  <td class="ff-cell ff-cell-hasfiles" style="background: color-mix(in srgb, var(--interactive-accent) 42%, transparent)">34</td>
+                  <td class="ff-cell ff-cell-hasfiles" style="background: color-mix(in srgb, var(--interactive-accent) 22%, transparent)">18</td>
+                  <td class="ff-cell ff-cell-hasfiles" style="background: color-mix(in srgb, var(--interactive-accent) 14%, transparent)">11</td>
+                  <td class="ff-cell ff-cell-total">63</td>
+                </tr>
+                <tr>
+                  <td class="ff-rowhead">Book</td>
+                  <td class="ff-cell ff-cell-hasfiles" style="background: color-mix(in srgb, var(--interactive-accent) 27%, transparent)">22</td>
+                  <td class="ff-cell ff-cell-hasfiles" style="background: color-mix(in srgb, var(--interactive-accent) 12%, transparent)">10</td>
+                  <td class="ff-cell ff-cell-hasfiles" style="background: color-mix(in srgb, var(--interactive-accent) 9%, transparent)">7</td>
+                  <td class="ff-cell ff-cell-total">39</td>
+                </tr>
+                <tr>
+                  <td class="ff-rowhead">Video</td>
+                  <td class="ff-cell ff-cell-hasfiles" style="background: color-mix(in srgb, var(--interactive-accent) 21%, transparent)">17</td>
+                  <td class="ff-cell ff-cell-hasfiles" style="background: color-mix(in srgb, var(--interactive-accent) 15%, transparent)">12</td>
+                  <td class="ff-cell ff-cell-empty">—</td>
+                  <td class="ff-cell ff-cell-total">29</td>
+                </tr>
+                <tr>
+                  <td class="ff-rowhead">Paper</td>
+                  <td class="ff-cell ff-cell-hasfiles" style="background: color-mix(in srgb, var(--interactive-accent) 12%, transparent)">10</td>
+                  <td class="ff-cell ff-cell-hasfiles" style="background: color-mix(in srgb, var(--interactive-accent) 7%, transparent)">6</td>
+                  <td class="ff-cell ff-cell-hasfiles" style="background: color-mix(in srgb, var(--interactive-accent) 4%, transparent)">3</td>
+                  <td class="ff-cell ff-cell-total">19</td>
+                </tr>
+                <tr class="ff-total-row">
+                  <td class="ff-rowhead">Total</td>
+                  <td class="ff-cell ff-cell-total">83</td>
+                  <td class="ff-cell ff-cell-total">46</td>
+                  <td class="ff-cell ff-cell-total">21</td>
+                  <td class="ff-cell ff-cell-grand">150</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ===== Bar panel ===== -->
+        <div class="ff-panel" data-panel="bar" hidden>
+          <div class="ff-chart-wrap">
+            <svg class="ff-svg" width="620" height="320" viewBox="0 0 620 320">
+              <!-- grid + y labels -->
+              <line x1="56" y1="46" x2="606" y2="46" stroke="var(--background-modifier-border)" stroke-width="1"/>
+              <line x1="56" y1="100" x2="606" y2="100" stroke="var(--background-modifier-border)" stroke-width="1"/>
+              <line x1="56" y1="154" x2="606" y2="154" stroke="var(--background-modifier-border)" stroke-width="1"/>
+              <line x1="56" y1="208" x2="606" y2="208" stroke="var(--background-modifier-border)" stroke-width="1"/>
+              <line x1="56" y1="262" x2="606" y2="262" stroke="var(--background-modifier-border)" stroke-width="1"/>
+              <text x="48" y="50" text-anchor="end" fill="var(--text-muted)" font-size="11">50</text>
+              <text x="48" y="104" text-anchor="end" fill="var(--text-muted)" font-size="11">40</text>
+              <text x="48" y="158" text-anchor="end" fill="var(--text-muted)" font-size="11">30</text>
+              <text x="48" y="212" text-anchor="end" fill="var(--text-muted)" font-size="11">20</text>
+              <text x="48" y="266" text-anchor="end" fill="var(--text-muted)" font-size="11">10</text>
+              <!-- bars: Article / Book / Video / Paper -->
+              <rect x="86" y="154" width="14" height="108" rx="4" fill="var(--interactive-accent)" opacity=".92" class="ff-bar"/>
+              <rect x="104" y="190" width="14" height="72" rx="4" fill="#7ac6e8" opacity=".92" class="ff-bar"/>
+              <rect x="122" y="216" width="14" height="46" rx="4" fill="#f2a65a" opacity=".92" class="ff-bar"/>
+              <rect x="230" y="226" width="14" height="36" rx="4" fill="var(--interactive-accent)" opacity=".92" class="ff-bar"/>
+              <rect x="248" y="250" width="14" height="12" rx="4" fill="#7ac6e8" opacity=".92" class="ff-bar"/>
+              <rect x="266" y="258" width="14" height="4" rx="2" fill="#f2a65a" opacity=".92" class="ff-bar"/>
+              <rect x="374" y="244" width="14" height="18" rx="4" fill="var(--interactive-accent)" opacity=".92" class="ff-bar"/>
+              <rect x="392" y="256" width="14" height="6" rx="3" fill="#7ac6e8" opacity=".92" class="ff-bar"/>
+              <rect x="410" y="238" width="14" height="24" rx="4" fill="#f2a65a" opacity=".92" class="ff-bar"/>
+              <rect x="518" y="262" width="14" height="0" rx="2" fill="var(--interactive-accent)" opacity=".92" class="ff-bar"/>
+              <rect x="536" y="268" width="14" height="0" rx="2" fill="#7ac6e8" opacity=".92" class="ff-bar"/>
+              <rect x="554" y="252" width="14" height="10" rx="4" fill="#f2a65a" opacity=".92" class="ff-bar"/>
+              <!-- x labels -->
+              <text x="106" y="304" text-anchor="middle" fill="var(--text-muted)" font-size="11">Article</text>
+              <text x="250" y="304" text-anchor="middle" fill="var(--text-muted)" font-size="11">Book</text>
+              <text x="394" y="304" text-anchor="middle" fill="var(--text-muted)" font-size="11">Video</text>
+              <text x="538" y="304" text-anchor="middle" fill="var(--text-muted)" font-size="11">Paper</text>
+            </svg>
+            <div class="ff-chart-legend">
+              <div class="ff-legend-item"><span class="ff-legend-dot" style="background:var(--interactive-accent)"></span>Read</div>
+              <div class="ff-legend-item"><span class="ff-legend-dot" style="background:#7ac6e8"></span>In progress</div>
+              <div class="ff-legend-item"><span class="ff-legend-dot" style="background:#f2a65a"></span>Queue</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== Scatter panel ===== -->
+        <div class="ff-panel" data-panel="scatter" hidden>
+          <div class="ff-toolbar">
+            <span class="ff-toolbar-label">X</span>
+            <select class="ff-select ff-select-sm"><option>Words</option><option selected>Created</option><option>Modified</option></select>
+            <span class="ff-toolbar-label">Y</span>
+            <select class="ff-select ff-select-sm"><option selected>Rating</option><option>Words</option><option>Size</option></select>
+            <span class="ff-toolbar-label">Color</span>
+            <select class="ff-select ff-select-sm"><option>— color by —</option><option>Type</option></select>
+            <label class="ff-check ff-check-inline"><input type="checkbox" checked /> Trend line</label>
+          </div>
+          <div class="ff-chart-wrap">
+            <svg class="ff-svg" width="620" height="420" viewBox="0 0 620 420">
+              <!-- grid -->
+              <line x1="56" y1="60" x2="600" y2="60" stroke="var(--background-modifier-border)" stroke-width="1"/>
+              <line x1="56" y1="140" x2="600" y2="140" stroke="var(--background-modifier-border)" stroke-width="1"/>
+              <line x1="56" y1="220" x2="600" y2="220" stroke="var(--background-modifier-border)" stroke-width="1"/>
+              <line x1="56" y1="300" x2="600" y2="300" stroke="var(--background-modifier-border)" stroke-width="1"/>
+              <line x1="56" y1="380" x2="600" y2="380" stroke="var(--background-modifier-border)" stroke-width="1"/>
+              <text x="48" y="64" text-anchor="end" fill="var(--text-muted)" font-size="11">5</text>
+              <text x="48" y="144" text-anchor="end" fill="var(--text-muted)" font-size="11">4</text>
+              <text x="48" y="224" text-anchor="end" fill="var(--text-muted)" font-size="11">3</text>
+              <text x="48" y="304" text-anchor="end" fill="var(--text-muted)" font-size="11">2</text>
+              <text x="48" y="384" text-anchor="end" fill="var(--text-muted)" font-size="11">1</text>
+              <!-- trend line -->
+              <line x1="120" y1="250" x2="580" y2="130" stroke="var(--text-muted)" stroke-width="1.5" stroke-dasharray="6 4" class="ff-trend-line"/>
+              <text x="600" y="50" text-anchor="end" fill="var(--text-muted)" font-size="11">trend r² = 0.62</text>
+              <!-- points -->
+              <circle cx="140" cy="300" r="5.5" fill="var(--interactive-accent)" opacity=".85" stroke="var(--background-primary)" stroke-width="1.5" class="ff-point"/>
+              <circle cx="180" cy="270" r="5.5" fill="#7ac6e8" opacity=".85" stroke="var(--background-primary)" stroke-width="1.5" class="ff-point"/>
+              <circle cx="210" cy="230" r="5.5" fill="var(--interactive-accent)" opacity=".85" stroke="var(--background-primary)" stroke-width="1.5" class="ff-point"/>
+              <circle cx="245" cy="280" r="5.5" fill="#f2a65a" opacity=".85" stroke="var(--background-primary)" stroke-width="1.5" class="ff-point"/>
+              <circle cx="270" cy="210" r="5.5" fill="#7ac6e8" opacity=".85" stroke="var(--background-primary)" stroke-width="1.5" class="ff-point"/>
+              <circle cx="310" cy="250" r="5.5" fill="var(--interactive-accent)" opacity=".85" stroke="var(--background-primary)" stroke-width="1.5" class="ff-point"/>
+              <circle cx="350" cy="190" r="5.5" fill="#f2a65a" opacity=".85" stroke="var(--background-primary)" stroke-width="1.5" class="ff-point"/>
+              <circle cx="390" cy="220" r="5.5" fill="#7ac6e8" opacity=".85" stroke="var(--background-primary)" stroke-width="1.5" class="ff-point"/>
+              <circle cx="430" cy="170" r="5.5" fill="var(--interactive-accent)" opacity=".85" stroke="var(--background-primary)" stroke-width="1.5" class="ff-point"/>
+              <circle cx="470" cy="200" r="5.5" fill="#f2a65a" opacity=".85" stroke="var(--background-primary)" stroke-width="1.5" class="ff-point"/>
+              <circle cx="510" cy="150" r="5.5" fill="#7ac6e8" opacity=".85" stroke="var(--background-primary)" stroke-width="1.5" class="ff-point"/>
+              <circle cx="555" cy="140" r="5.5" fill="var(--interactive-accent)" opacity=".85" stroke="var(--background-primary)" stroke-width="1.5" class="ff-point"/>
+            </svg>
+            <div class="ff-chart-legend">
+              <div class="ff-legend-item"><span class="ff-legend-dot" style="background:var(--interactive-accent)"></span>Article</div>
+              <div class="ff-legend-item"><span class="ff-legend-dot" style="background:#7ac6e8"></span>Book</div>
+              <div class="ff-legend-item"><span class="ff-legend-dot" style="background:#f2a65a"></span>Video</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== Trend panel ===== -->
+        <div class="ff-panel" data-panel="trend" hidden>
+          <div class="ff-toolbar">
+            <span class="ff-toolbar-label">Time</span>
+            <select class="ff-select ff-select-sm"><option selected>Created</option><option>Modified</option></select>
+            <div class="ff-seg ff-seg-sm">
+              <button>day</button><button class="is-active">week</button><button>month</button>
+            </div>
+          </div>
+          <div class="ff-chart-wrap">
+            <svg class="ff-svg" width="620" height="320" viewBox="0 0 620 320">
+              <defs>
+                <linearGradient id="grad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="var(--interactive-accent)" stop-opacity=".45"/>
+                  <stop offset="100%" stop-color="var(--interactive-accent)" stop-opacity=".02"/>
+                </linearGradient>
+              </defs>
+              <line x1="46" y1="80" x2="606" y2="80" stroke="var(--background-modifier-border)" stroke-width="1"/>
+              <line x1="46" y1="140" x2="606" y2="140" stroke="var(--background-modifier-border)" stroke-width="1"/>
+              <line x1="46" y1="200" x2="606" y2="200" stroke="var(--background-modifier-border)" stroke-width="1"/>
+              <line x1="46" y1="260" x2="606" y2="260" stroke="var(--background-modifier-border)" stroke-width="1"/>
+              <text x="38" y="84" text-anchor="end" fill="var(--text-muted)" font-size="11">20</text>
+              <text x="38" y="144" text-anchor="end" fill="var(--text-muted)" font-size="11">15</text>
+              <text x="38" y="204" text-anchor="end" fill="var(--text-muted)" font-size="11">10</text>
+              <text x="38" y="264" text-anchor="end" fill="var(--text-muted)" font-size="11">5</text>
+              <path d="M46,250 L139,230 L233,258 L326,140 L419,150 L513,110 L606,86 L606,276 L46,276 Z" fill="url(#grad)" class="ff-area"/>
+              <path d="M46,250 L139,230 L233,258 L326,140 L419,150 L513,110 L606,86" fill="none" stroke="var(--interactive-accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="ff-line"/>
+              <circle cx="46" cy="250" r="4" fill="var(--interactive-accent)" stroke="var(--background-primary)" stroke-width="1.5" class="ff-point"/>
+              <circle cx="139" cy="230" r="4" fill="var(--interactive-accent)" stroke="var(--background-primary)" stroke-width="1.5" class="ff-point"/>
+              <circle cx="233" cy="258" r="4" fill="var(--interactive-accent)" stroke="var(--background-primary)" stroke-width="1.5" class="ff-point"/>
+              <circle cx="326" cy="140" r="4" fill="var(--interactive-accent)" stroke="var(--background-primary)" stroke-width="1.5" class="ff-point"/>
+              <circle cx="419" cy="150" r="4" fill="var(--interactive-accent)" stroke="var(--background-primary)" stroke-width="1.5" class="ff-point"/>
+              <circle cx="513" cy="110" r="4" fill="var(--interactive-accent)" stroke="var(--background-primary)" stroke-width="1.5" class="ff-point"/>
+              <circle cx="606" cy="86" r="4" fill="var(--interactive-accent)" stroke="var(--background-primary)" stroke-width="1.5" class="ff-point"/>
+              <text x="46" y="296" text-anchor="middle" fill="var(--text-muted)" font-size="10">Mar</text>
+              <text x="139" y="296" text-anchor="middle" fill="var(--text-muted)" font-size="10">Apr</text>
+              <text x="233" y="296" text-anchor="middle" fill="var(--text-muted)" font-size="10">May</text>
+              <text x="326" y="296" text-anchor="middle" fill="var(--text-muted)" font-size="10">Jun</text>
+              <text x="419" y="296" text-anchor="middle" fill="var(--text-muted)" font-size="10">Jul</text>
+              <text x="513" y="296" text-anchor="middle" fill="var(--text-muted)" font-size="10">Aug</text>
+              <text x="606" y="296" text-anchor="middle" fill="var(--text-muted)" font-size="10">Sep</text>
+            </svg>
+          </div>
+        </div>
+
+        <!-- ===== Donut panel ===== -->
+        <div class="ff-panel" data-panel="donut" hidden>
+          <div class="ff-donut-wrap">
+            <svg class="ff-svg" width="240" height="240" viewBox="0 0 240 240">
+              <g transform="rotate(-90 120 120)">
+                <circle cx="120" cy="120" r="84" fill="none" stroke-width="36" stroke="var(--interactive-accent)" stroke-dasharray="151 377" class="ff-donut-seg"/>
+                <circle cx="120" cy="120" r="84" fill="none" stroke-width="36" stroke="#7ac6e8" stroke-dasharray="94 434" stroke-dashoffset="-151" class="ff-donut-seg"/>
+                <circle cx="120" cy="120" r="84" fill="none" stroke-width="36" stroke="#f2a65a" stroke-dasharray="70 458" stroke-dashoffset="-245" class="ff-donut-seg"/>
+                <circle cx="120" cy="120" r="84" fill="none" stroke-width="36" stroke="#9cce7c" stroke-dasharray="46 482" stroke-dashoffset="-315" class="ff-donut-seg"/>
+              </g>
+              <text x="120" y="126" text-anchor="middle" fill="var(--text-normal)" font-size="26" font-weight="700">150</text>
+              <text x="120" y="144" text-anchor="middle" fill="var(--text-muted)" font-size="11">files</text>
+            </svg>
+            <div class="ff-chart-legend">
+              <div class="ff-legend-item"><span class="ff-legend-dot" style="background:var(--interactive-accent)"></span>Article — 63 (42.0%)</div>
+              <div class="ff-legend-item"><span class="ff-legend-dot" style="background:#7ac6e8"></span>Book — 39 (26.0%)</div>
+              <div class="ff-legend-item"><span class="ff-legend-dot" style="background:#f2a65a"></span>Video — 29 (19.3%)</div>
+              <div class="ff-legend-item"><span class="ff-legend-dot" style="background:#9cce7c"></span>Paper — 19 (12.7%)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== Data panel ===== -->
+        <div class="ff-panel" data-panel="data" hidden>
+          <div class="ff-grid-toolbar" style="border:1px solid var(--background-modifier-border); border-radius:12px 12px 0 0; background:var(--background-secondary)">
+            <input class="ff-input ff-grid-search" type="search" placeholder="Search files…" />
+            <button class="ff-btn ff-btn-outline" style="width:auto">Export CSV</button>
+            <button class="ff-btn ff-btn-outline" style="width:auto">Copy MD</button>
+          </div>
+          <div class="ff-chipbar">
+            <button class="ff-chip is-on">Type · 148</button>
+            <button class="ff-chip is-on">Status · 148</button>
+            <button class="ff-chip is-on">Rating · 112</button>
+            <button class="ff-chip is-on">Words · 96</button>
+            <button class="ff-chip is-on">Created · 148</button>
+            <button class="ff-chip">Tags · 131</button>
+            <button class="ff-chip">Year · 42</button>
+          </div>
+          <div class="ff-grid-count">148 of 148 files · 5 columns</div>
+          <div class="ff-grid">
+            <table class="ff-table ff-grid-table">
+              <thead><tr><th>Name</th><th>Type</th><th>Status</th><th>Rating</th><th>Words</th></tr></thead>
+              <tbody>
+                <tr class="ff-grid-row"><td>The Second Machine Age</td><td>Book</td><td>Read</td><td>4.5</td><td>98,412</td></tr>
+                <tr class="ff-grid-row"><td>Attention is all you need</td><td>Paper</td><td>Read</td><td>5.0</td><td>11,204</td></tr>
+                <tr class="ff-grid-row"><td>Build a Second Brain — review</td><td>Article</td><td>In progress</td><td>—</td><td>2,340</td></tr>
+                <tr class="ff-grid-row"><td>Obsidian plugin architecture</td><td>Video</td><td>Queue</td><td>—</td><td>—</td></tr>
+                <tr class="ff-grid-row"><td>Thinking, Fast and Slow</td><td>Book</td><td>Read</td><td>4.8</td><td>152,330</td></tr>
+                <tr class="ff-grid-row"><td>LLM retrieval survey</td><td>Paper</td><td>In progress</td><td>4.0</td><td>23,118</td></tr>
+                <tr class="ff-grid-row"><td>Design tokens explained</td><td>Article</td><td>Read</td><td>3.5</td><td>1,890</td></tr>
+                <tr class="ff-grid-row"><td>How to take smart notes</td><td>Book</td><td>Queue</td><td>—</td><td>87,002</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Tab switching + theme toggle for the preview
+  document.querySelectorAll(".ff-tab").forEach((tab) => {
+    tab.addEventListener("click", () => {
+      document.querySelectorAll(".ff-tab").forEach((t) => t.classList.remove("is-active"));
+      tab.classList.add("is-active");
+      const target = tab.dataset.tab;
+      document.querySelectorAll(".ff-panel").forEach((p) => {
+        p.hidden = p.dataset.panel !== target;
+      });
+    });
+  });
+  const body = document.body;
+  const toggle = document.getElementById("themeToggle");
+  toggle.addEventListener("click", () => {
+    const next = body.dataset.theme === "dark" ? "light" : "dark";
+    body.dataset.theme = next;
+    toggle.textContent = next === "dark" ? "☀ Light" : "🌙 Dark";
+  });
+</script>
+</body>
+</html>

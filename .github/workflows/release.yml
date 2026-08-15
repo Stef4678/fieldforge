@@ -1,0 +1,45 @@
+name: Release plugin
+
+on:
+  push:
+    tags:
+      - "*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Build
+        run: npm run build
+
+      - name: Package plugin
+        run: |
+          mkdir -p "${{ runner.temp }}/fieldforge"
+          cp main.js manifest.json styles.css "${{ runner.temp }}/fieldforge/"
+          cd "${{ runner.temp }}"
+          zip -r fieldforge-${{ github.ref_name }}.zip fieldforge
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            "${{ runner.temp }}/fieldforge-${{ github.ref_name }}.zip"
+            main.js
+            manifest.json
+            styles.css
+          generate_release_notes: true
