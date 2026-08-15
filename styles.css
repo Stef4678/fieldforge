@@ -666,7 +666,6 @@
 	border-bottom: 1px solid var(--background-modifier-border);
 	overflow-x: auto;
 	flex-wrap: nowrap;
-	scrollbar-width: thin;
 }
 
 .ff-chip {
