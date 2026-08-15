@@ -1,7 +1,7 @@
 {
 	"id": "fieldforge",
 	"name": "FieldForge",
-	"version": "0.1.0",
+	"version": "1.0.0",
 	"minAppVersion": "1.4.0",
 	"description": "Visual property explorer for your vault. Pick frontmatter fields and forge them into pivot tables and charts — no Dataview queries needed.",
 	"author": "Stef4678",

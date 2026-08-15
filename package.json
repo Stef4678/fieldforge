@@ -1,6 +1,6 @@
 {
 	"name": "fieldforge",
-	"version": "0.1.0",
+	"version": "1.0.0",
 	"description": "Visual property explorer for Obsidian: pivot tables and charts from frontmatter, no Dataview needed.",
 	"main": "main.js",
 	"scripts": {
