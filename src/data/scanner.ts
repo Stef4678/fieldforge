@@ -3,16 +3,13 @@
  * and produces rows + a typed field catalog.
  */
 
-import { MetadataCache, TFile, Vault } from "obsidian";
+import { MetadataCache, Vault } from "obsidian";
 import {
 	BUILTIN_FIELDS,
 	F_CTIME,
 	F_MTIME,
-	F_NAME,
-	F_PATH,
 	F_SIZE,
 	F_TAGS,
-	F_FOLDER,
 	FieldInfo,
 	FieldType,
 	VaultRow,
@@ -111,7 +108,7 @@ export class VaultScanner {
 		// Then frontmatter fields, most-populated first.
 		const fmFields: FieldInfo[] = [];
 		for (const [name, count] of present) {
-			const votes = typeVotes.get(name) ?? new Map();
+			const votes = typeVotes.get(name) ?? new Map<FieldType, number>();
 			let best: FieldType = "unknown";
 			let bestN = -1;
 			for (const [t, n] of votes) {

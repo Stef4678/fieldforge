@@ -105,7 +105,8 @@ export function displayValue(value: unknown): string {
 		if (!Number.isFinite(value)) return "";
 		return String(value);
 	}
-	return String(value);
+	if (typeof value === "string") return value;
+	return "";
 }
 
 /** Compact number formatting: 1234 -> 1.2k, 3_200_000 -> 3.2M. */

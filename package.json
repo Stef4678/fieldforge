@@ -1,12 +1,13 @@
 {
 	"name": "fieldforge",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "Visual property explorer for Obsidian: pivot tables and charts from frontmatter, no Dataview needed.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
 		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
-		"typecheck": "tsc -noEmit -skipLibCheck"
+		"typecheck": "tsc -noEmit -skipLibCheck",
+		"lint": "eslint src"
 	},
 	"keywords": [
 		"obsidian",
@@ -16,12 +17,14 @@
 		"frontmatter",
 		"charts"
 	],
-	"author": "You",
+	"author": "Stef4678",
 	"license": "MIT",
 	"devDependencies": {
 		"@types/node": "^20.11.0",
-		"builtin-modules": "^3.3.0",
+		"@typescript-eslint/parser": "^8.67.0",
 		"esbuild": "^0.20.0",
+		"eslint": "^9.39.5",
+		"eslint-plugin-obsidianmd": "^0.4.1",
 		"obsidian": "latest",
 		"tslib": "^2.6.2",
 		"typescript": "^5.3.3"

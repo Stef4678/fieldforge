@@ -52,18 +52,15 @@ function hueOf(color: string): number {
 }
 
 function svgRoot(parent: HTMLElement, width: number, height: number): SVGElement {
-	const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+	const svg = parent.createSvg("svg", { cls: "ff-svg" });
 	svg.setAttribute("width", String(width));
 	svg.setAttribute("height", String(height));
-	svg.setAttribute("class", "ff-svg");
-	parent.appendChild(svg);
 	return svg;
 }
 
 function svgEl(tag: string, attrs: Record<string, string | number>, parent: Element): SVGElement {
-	const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+	const el = parent.createSvg(tag as keyof SVGElementTagNameMap);
 	for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, String(v));
-	parent.appendChild(el);
 	return el;
 }
 
@@ -71,8 +68,7 @@ function makeTooltip(container: HTMLElement): HTMLElement {
 	return container.createDiv({ cls: "ff-tooltip" });
 }
 
-function showTip(tip: HTMLElement, clientX: number, clientY: number, html: string): void {
-	tip.innerHTML = html;
+function showTip(tip: HTMLElement, clientX: number, clientY: number): void {
 	tip.classList.add("is-visible");
 	const parentRect = tip.parentElement!.getBoundingClientRect();
 	const r = tip.getBoundingClientRect();
@@ -86,16 +82,18 @@ function showTip(tip: HTMLElement, clientX: number, clientY: number, html: strin
 	tip.style.top = `${top}px`;
 }
 
-function hideTip(tip: HTMLElement): void {
-	tip.classList.remove("is-visible");
+/** Fill a tooltip with plain-text lines (no innerHTML). */
+export function fillTip(tip: HTMLElement, lines: { text: string; bold?: boolean; cls?: string }[]): void {
+	tip.empty();
+	for (const line of lines) {
+		const d = tip.createDiv({ cls: line.cls ?? "" });
+		if (line.bold) d.addClass("ff-tip-bold");
+		d.textContent = line.text;
+	}
 }
 
-export function escapeHtml(s: string): string {
-	return s
-		.replace(/&/g, "&amp;")
-		.replace(/</g, "&lt;")
-		.replace(/>/g, "&gt;")
-		.replace(/"/g, "&quot;");
+function hideTip(tip: HTMLElement): void {
+	tip.classList.remove("is-visible");
 }
 
 function truncate(s: string, n: number): string {
@@ -140,38 +138,36 @@ export function renderEmpty(container: HTMLElement, message: string): void {
 }
 
 /** Small status line under charts: what exactly is being plotted. */
-export function chartCaption(result: PivotResult): HTMLElement {
-	const cap = document.createElement("div");
-	cap.className = "ff-chart-caption";
+export function chartCaption(parent: HTMLElement, result: PivotResult): void {
+	const cap = parent.createDiv({ cls: "ff-chart-caption" });
 	const groups = result.rowKeys.length;
 	const files = result.sourceCount;
-	cap.textContent = `${groups} group${groups === 1 ? "" : "s"} · ${files} file${files === 1 ? "" : "s"}`;
+	cap.createSpan({ text: `${groups} group${groups === 1 ? "" : "s"} · ${files} file${files === 1 ? "" : "s"}` });
 	const allNone = groups === 1 && result.rowKeys[0] === "(none)";
 	if (allNone) {
-		const warn = document.createElement("span");
-		warn.className = "ff-warn";
-		warn.textContent = " ⚠ everything lands in “(none)” — the Rows property is missing from your notes; pick a different field in the sidebar.";
-		cap.appendChild(warn);
+		cap.createSpan({
+			cls: "ff-warn",
+			text: " ⚠ Everything lands in “(none)” — the rows property is missing from your notes; pick a different field in the sidebar.",
+		});
 	}
-	return cap;
 }
 
-function legendHtml(items: { label: string; color: string }[]): HTMLElement {
-	const wrap = document.createElement("div");
-	wrap.className = "ff-chart-legend";
+function legendHtml(parent: HTMLElement, items: { label: string; idx: number }[]): void {
+	const wrap = parent.createDiv({ cls: "ff-chart-legend" });
 	for (const it of items) {
-		const item = document.createElement("div");
-		item.className = "ff-legend-item";
-		const dot = document.createElement("span");
-		dot.className = "ff-legend-dot";
-		dot.style.background = it.color;
-		const label = document.createElement("span");
-		label.textContent = it.label;
-		item.appendChild(dot);
-		item.appendChild(label);
-		wrap.appendChild(item);
+		const item = wrap.createDiv({ cls: "ff-legend-item" });
+		item.createSpan({ cls: `ff-legend-dot ff-c${it.idx % 10}` });
+		item.createSpan({ text: it.label });
 	}
-	return wrap;
+}
+
+/** CSS custom properties for the chart palette (used by .ff-c0..9 classes). */
+function paletteProps(colors: ChartColors): Record<string, string> {
+	const props: Record<string, string> = {};
+	for (let i = 0; i < colors.palette.length; i++) {
+		props[`--ff-c${i}`] = colors.palette[i];
+	}
+	return props;
 }
 
 /* ------------------------------------------------------------------ */
@@ -199,7 +195,15 @@ export function renderBarChart(container: HTMLElement, result: PivotResult, colo
 	const padT = 26;
 	const padB = 52;
 	const plotH = height - padT - padB;
-	const rawMax = Math.max(...matrix.flatMap((r) => r.map((v) => v ?? 0)), ...rowTotals);
+	let rawMax = 0;
+	for (const row of matrix) {
+		for (const v of row) {
+			if (v !== null && v > rawMax) rawMax = v;
+		}
+	}
+	for (const t of rowTotals) {
+		if (t > rawMax) rawMax = t;
+	}
 	if (rawMax <= 0) {
 		renderEmpty(container, "All values are empty (0) — pick a different Value field or loosen your filters.");
 		return;
@@ -209,6 +213,7 @@ export function renderBarChart(container: HTMLElement, result: PivotResult, colo
 	const top = ticks[ticks.length - 1];
 
 	const wrap = container.createDiv({ cls: "ff-chart-wrap" });
+	wrap.setCssProps(paletteProps(colors));
 	const svg = svgRoot(wrap, width, height);
 	const tip = makeTooltip(wrap);
 
@@ -265,15 +270,16 @@ export function renderBarChart(container: HTMLElement, result: PivotResult, colo
 				},
 				svg,
 			);
-			// Inline styles: immune to any theme / app CSS interference.
-			bar.style.fill = colors.palette[j % colors.palette.length];
-			bar.style.opacity = "0.92";
-			bar.classList.add("ff-bar");
+			bar.addClass("ff-bar", `ff-c${j % colors.palette.length}`);
 			const colName = colKeys[j] ?? "All";
 			const count = counts[i]?.[j] ?? 0;
-			bar.addEventListener("mouseenter", (e) =>
-				showTip(tip, e.clientX, e.clientY, `<b>${escapeHtml(rk)}</b><br/>${escapeHtml(colName)}: <b>${formatNumber(v)}</b>${count > 0 ? ` · ${count} file(s)` : ""}`),
-			);
+			bar.addEventListener("mouseenter", (e) => {
+				fillTip(tip, [
+					{ text: rk, bold: true },
+					{ text: `${colName}: ${formatNumber(v)}${count > 0 ? ` · ${count} file(s)` : ""}` },
+				]);
+				showTip(tip, e.clientX, e.clientY);
+			});
 			bar.addEventListener("mousemove", (e) => {
 				tip.classList.add("is-visible");
 				const parentRect = wrap.getBoundingClientRect();
@@ -295,11 +301,9 @@ export function renderBarChart(container: HTMLElement, result: PivotResult, colo
 	});
 
 	if (!isSingle) {
-		wrap.appendChild(
-			legendHtml(colKeys.map((k, j) => ({ label: k, color: colors.palette[j % colors.palette.length] }))),
-		);
+		legendHtml(wrap, colKeys.map((k, j) => ({ label: k, idx: j })));
 	}
-	wrap.appendChild(chartCaption(result));
+	chartCaption(wrap, result);
 }
 
 /* ------------------------------------------------------------------ */
@@ -368,6 +372,7 @@ export function renderScatterChart(
 	const plotH = height - padT - padB;
 
 	const wrap = container.createDiv({ cls: "ff-chart-wrap" });
+	wrap.setCssProps(paletteProps(colors));
 	const svg = svgRoot(wrap, width, height);
 	const tip = makeTooltip(wrap);
 
@@ -411,22 +416,27 @@ export function renderScatterChart(
 		}
 	}
 
-	const catColors = new Map<string, string>();
+	const catColors = new Map<string, number>();
 	if (colorField) {
-		valid.forEach((p, i) => {
-			if (!catColors.has(p.cat)) catColors.set(p.cat, colors.palette[catColors.size % colors.palette.length]);
+		valid.forEach((p) => {
+			if (!catColors.has(p.cat)) catColors.set(p.cat, catColors.size % colors.palette.length);
 		});
 	}
 
 	for (const p of valid) {
-		const fill = colorField ? catColors.get(p.cat)! : colors.accent;
+		const colorIdx = colorField ? (catColors.get(p.cat) ?? 0) : 0;
 		const circle = svgEl("circle", { cx: sx(p.x), cy: sy(p.y), r: 5.5, stroke: "var(--background-primary)", "stroke-width": 1.5 }, svg);
-		circle.style.fill = fill;
-		circle.style.opacity = "0.85";
-		circle.classList.add("ff-point");
+		circle.addClass("ff-point", `ff-c${colorIdx}`);
 		circle.addEventListener("mouseenter", (e) => {
 			circle.setAttribute("r", "8");
-			showTip(tip, e.clientX, e.clientY, `<b>${escapeHtml(p.name)}</b><br/>${escapeHtml(xField)}: ${formatNumber(p.x)}<br/>${escapeHtml(yField)}: ${formatNumber(p.y)}${p.cat ? `<br/>${escapeHtml(colorField!)}: ${escapeHtml(p.cat)}` : ""}`);
+			const lines: { text: string; bold?: boolean }[] = [
+				{ text: p.name, bold: true },
+				{ text: `${xField}: ${formatNumber(p.x)}` },
+				{ text: `${yField}: ${formatNumber(p.y)}` },
+			];
+			if (p.cat && colorField) lines.push({ text: `${colorField}: ${p.cat}` });
+			fillTip(tip, lines);
+			showTip(tip, e.clientX, e.clientY);
 		});
 		circle.addEventListener("mousemove", (e) => {
 			tip.classList.add("is-visible");
@@ -446,7 +456,7 @@ export function renderScatterChart(
 	}
 
 	if (colorField && catColors.size > 0) {
-		wrap.appendChild(legendHtml([...catColors.entries()].map(([label, color]) => ({ label, color }))));
+		legendHtml(wrap, [...catColors.entries()].map(([label, idx]) => ({ label, idx })));
 	}
 }
 
@@ -507,6 +517,7 @@ export function renderTrendChart(
 	const plotH = height - padT - padB;
 
 	const wrap = container.createDiv({ cls: "ff-chart-wrap" });
+	wrap.setCssProps(paletteProps(colors));
 	const svg = svgRoot(wrap, width, height);
 	const tip = makeTooltip(wrap);
 
@@ -545,7 +556,10 @@ export function renderTrendChart(
 		const cx = px(i);
 		const cy = py(v);
 		const dot = svgEl("circle", { cx, cy, r: 4, fill: colors.accent, stroke: "var(--background-primary)", "stroke-width": 1.5, class: "ff-point" }, svg);
-		dot.addEventListener("mouseenter", (e) => showTip(tip, e.clientX, e.clientY, `<b>${escapeHtml(k)}</b><br/>${v} file(s)`));
+		dot.addEventListener("mouseenter", (e) => {
+			fillTip(tip, [{ text: k, bold: true }, { text: `${v} file(s)` }]);
+			showTip(tip, e.clientX, e.clientY);
+		});
 		dot.addEventListener("mousemove", (e) => {
 			tip.classList.add("is-visible");
 			const parentRect = wrap.getBoundingClientRect();
@@ -612,6 +626,7 @@ export function renderDonutChart(container: HTMLElement, result: PivotResult, co
 	}
 
 	const wrap = container.createDiv({ cls: "ff-donut-wrap" });
+	wrap.setCssProps(paletteProps(colors));
 	const size = 240;
 	const cx = size / 2;
 	const cy = size / 2;
@@ -634,16 +649,18 @@ export function renderDonutChart(container: HTMLElement, result: PivotResult, co
 				r,
 				fill: "none",
 				"stroke-width": stroke,
-				stroke: colors.palette[i % colors.palette.length],
 				"stroke-dasharray": `${dash} ${C - dash}`,
 				"stroke-dashoffset": -offset,
-				class: "ff-donut-seg",
+				class: `ff-donut-seg ff-c${i % colors.palette.length}`,
 			},
 			group,
 		);
 		seg.addEventListener("mouseenter", (e) => {
-			seg.setAttribute("stroke-width", String(stroke + 6));
-			showTip(tipFor(wrap), e.clientX, e.clientY, `<b>${escapeHtml(s.key)}</b><br/>${formatNumber(s.value)} · ${(frac * 100).toFixed(1)}%`);
+			fillTip(tipFor(wrap), [
+				{ text: s.key, bold: true },
+				{ text: `${formatNumber(s.value)} · ${(frac * 100).toFixed(1)}%` },
+			]);
+			showTip(tipFor(wrap), e.clientX, e.clientY);
 		});
 		seg.addEventListener("mousemove", (e) => {
 			const tip = tipFor(wrap);
@@ -657,10 +674,7 @@ export function renderDonutChart(container: HTMLElement, result: PivotResult, co
 			tip.style.left = `${left}px`;
 			tip.style.top = `${top}px`;
 		});
-		seg.addEventListener("mouseleave", () => {
-			seg.setAttribute("stroke-width", String(stroke));
-			hideTip(tipFor(wrap));
-		});
+		seg.addEventListener("mouseleave", () => hideTip(tipFor(wrap)));
 		offset += frac * C;
 	});
 
@@ -668,18 +682,17 @@ export function renderDonutChart(container: HTMLElement, result: PivotResult, co
 	const center = svgEl("text", { x: cx, y: cy + 6, "text-anchor": "middle", fill: colors.text, "font-size": 26, "font-weight": 700 }, svg);
 	center.textContent = formatNumber(total);
 	const centerSub = svgEl("text", { x: cx, y: cy + 24, "text-anchor": "middle", fill: colors.muted, "font-size": 11 }, svg);
-	centerSub.textContent = "files";
+	centerSub.textContent = "Files";
 
 	// Legend
-	wrap.appendChild(
-		legendHtml(
-			slices.map((s, i) => ({
-				label: `${s.key} — ${formatNumber(s.value)} (${((s.value / total) * 100).toFixed(1)}%)`,
-				color: colors.palette[i % colors.palette.length],
-			})),
-		),
+	legendHtml(
+		wrap,
+		slices.map((s, i) => ({
+			label: `${s.key} — ${formatNumber(s.value)} (${((s.value / total) * 100).toFixed(1)}%)`,
+			idx: i,
+		})),
 	);
-	wrap.appendChild(chartCaption(result));
+	chartCaption(wrap, result);
 }
 
 const tips = new WeakMap<HTMLElement, HTMLElement>();

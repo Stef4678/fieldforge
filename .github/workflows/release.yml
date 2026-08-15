@@ -7,6 +7,8 @@ on:
 
 permissions:
   contents: write
+  id-token: write
+  attestations: write
 
 jobs:
   build:
@@ -27,18 +29,18 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Package plugin
-        run: |
-          mkdir -p "${{ runner.temp }}/fieldforge"
-          cp main.js manifest.json styles.css "${{ runner.temp }}/fieldforge/"
-          cd "${{ runner.temp }}"
-          zip -r fieldforge-${{ github.ref_name }}.zip fieldforge
+      - name: Generate artifact attestations
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: |
+            ${{ github.workspace }}/main.js
+            ${{ github.workspace }}/manifest.json
+            ${{ github.workspace }}/styles.css
 
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            ${{ runner.temp }}/fieldforge-${{ github.ref_name }}.zip
             main.js
             manifest.json
             styles.css

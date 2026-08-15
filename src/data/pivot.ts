@@ -68,8 +68,8 @@ function keyOf(value: unknown, type: FieldType): string {
 	if (type === "date") {
 		// Normalize timestamps and ISO date strings to YYYY-MM-DD so
 		// each day/week is one group instead of one group per timestamp.
-		const d = typeof value === "number" ? new Date(value) : new Date(String(value));
-		if (!Number.isNaN(d.getTime())) return d.toISOString().slice(0, 10);
+		const d = typeof value === "number" || typeof value === "string" ? new Date(value) : null;
+		if (d !== null && !Number.isNaN(d.getTime())) return d.toISOString().slice(0, 10);
 	}
 	const s = displayValue(value);
 	if (s === "/" || s === "") return "(root)";

@@ -1,8 +1,18 @@
 import esbuild from "esbuild";
 import process from "process";
-import builtins from "builtin-modules";
 
-const banner = `/* FieldForge - built ${new Date().toISOString()} */`;
+const banner = "/* FieldForge */";
+
+// Node.js built-ins (kept static so the build stays deterministic and
+// avoids an extra dependency).
+const builtins = [
+	"assert", "buffer", "child_process", "cluster", "console", "constants",
+	"crypto", "dgram", "diagnostics_channel", "dns", "domain", "events",
+	"fs", "http", "http2", "https", "module", "net", "os", "path",
+	"perf_hooks", "process", "punycode", "querystring", "readline", "repl",
+	"stream", "string_decoder", "sys", "timers", "tls", "trace_events",
+	"tty", "url", "util", "v8", "vm", "wasi", "worker_threads", "zlib",
+];
 
 const prod = process.argv[2] === "production";
 

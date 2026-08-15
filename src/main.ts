@@ -10,24 +10,24 @@ export default class FieldForgePlugin extends Plugin {
 		});
 
 		this.addCommand({
-			id: "open-fieldforge",
-			name: "Open FieldForge: property explorer",
+			id: "open",
+			name: "Open property explorer",
 			callback: () => {
 				void this.activateView(false);
 			},
 		});
 
 		this.addCommand({
-			id: "open-fieldforge-sidebar",
-			name: "Open FieldForge in right sidebar",
+			id: "open-sidebar",
+			name: "Open in right sidebar",
 			callback: () => {
 				void this.activateView(true);
 			},
 		});
 
 		this.addCommand({
-			id: "fieldforge-copy-markdown",
-			name: "FieldForge: copy current view as Markdown table",
+			id: "copy-markdown",
+			name: "Copy current view as Markdown table",
 			checkCallback: (checking) => {
 				const view = this.getView();
 				if (!view) return false;
@@ -47,7 +47,7 @@ export default class FieldForgePlugin extends Plugin {
 	async activateView(sidebar = false): Promise<void> {
 		const existing = this.app.workspace.getLeavesOfType(VIEW_TYPE_FIELD_FORGE);
 		if (existing.length > 0) {
-			this.app.workspace.revealLeaf(existing[0]);
+			this.app.workspace.setActiveLeaf(existing[0], { focus: true });
 			return;
 		}
 		const leaf = sidebar
@@ -58,10 +58,11 @@ export default class FieldForgePlugin extends Plugin {
 			return;
 		}
 		await leaf.setViewState({ type: VIEW_TYPE_FIELD_FORGE, active: true });
-		this.app.workspace.revealLeaf(leaf);
+		this.app.workspace.setActiveLeaf(leaf, { focus: true });
 	}
 
 	onunload() {
-		this.app.workspace.detachLeavesOfType(VIEW_TYPE_FIELD_FORGE);
+		// Intentionally no leaf detaching: doing so would reset the leaf
+		// to its default location when the plugin is re-enabled.
 	}
 }

@@ -5,7 +5,7 @@
 
 import { ItemView, Notice, Plugin, TFile, WorkspaceLeaf, debounce, setIcon } from "obsidian";
 import { VaultScanner } from "./data/scanner";
-import { DEFAULT_CONFIG, Filter, PivotConfig, buildPivot } from "./data/pivot";
+import { DEFAULT_CONFIG, PivotConfig, buildPivot } from "./data/pivot";
 import { COUNT_FIELD, FieldInfo, VaultRow, countDistinct, formatNumber } from "./data/schema";
 import { ControlsApi, renderControls } from "./ui/controls";
 import { renderPivotTable, pivotToCSV, pivotToMarkdown } from "./ui/pivotTable";
@@ -346,10 +346,9 @@ export class FieldForgeView extends ItemView {
 		try {
 			const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
 			const url = URL.createObjectURL(blob);
-			const a = document.createElement("a");
-			a.href = url;
-			a.download = name;
+			const a = document.body.createEl("a", { attr: { href: url, download: name } });
 			a.click();
+			a.remove();
 			URL.revokeObjectURL(url);
 			new Notice("FieldForge: CSV exported.");
 		} catch {

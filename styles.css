@@ -188,10 +188,6 @@
 		var(--background-primary);
 }
 
-.ff-canvas-inner {
-	display: contents;
-}
-
 /* ------------------------------------------------------------------
    Sidebar sections
    ------------------------------------------------------------------ */
@@ -483,7 +479,7 @@
 }
 
 .ff-hidden {
-	display: none !important;
+	display: none;
 }
 
 /* ------------------------------------------------------------------
@@ -628,8 +624,8 @@
 	background: color-mix(in srgb, var(--background-modifier-hover) 80%, transparent);
 }
 
-.ff-total-head {
-	background: color-mix(in srgb, var(--background-modifier-hover) 60%, var(--background-secondary)) !important;
+.ff-table th.ff-total-head {
+	background: color-mix(in srgb, var(--background-modifier-hover) 60%, var(--background-secondary));
 }
 
 /* ------------------------------------------------------------------
@@ -739,24 +735,26 @@
 }
 
 .ff-bar {
+	opacity: 0.92;
 	transition:
 		opacity 0.15s ease,
 		filter 0.15s ease;
 }
 
 .ff-bar:hover {
-	opacity: 1 !important;
+	opacity: 1;
 	filter: brightness(1.12);
 }
 
 .ff-point {
+	opacity: 0.85;
 	transition:
 		opacity 0.15s ease,
 		filter 0.15s ease;
 }
 
 .ff-point:hover {
-	opacity: 1 !important;
+	opacity: 1;
 	filter: brightness(1.15);
 }
 
@@ -772,6 +770,19 @@
 	opacity: 0.95;
 }
 
+/* Chart palette: colors are injected as CSS custom properties (--ff-c0..9)
+   via setCssProps, so charts stay themeable without inline styles. */
+.ff-c0 { fill: var(--ff-c0); background-color: var(--ff-c0); }
+.ff-c1 { fill: var(--ff-c1); background-color: var(--ff-c1); }
+.ff-c2 { fill: var(--ff-c2); background-color: var(--ff-c2); }
+.ff-c3 { fill: var(--ff-c3); background-color: var(--ff-c3); }
+.ff-c4 { fill: var(--ff-c4); background-color: var(--ff-c4); }
+.ff-c5 { fill: var(--ff-c5); background-color: var(--ff-c5); }
+.ff-c6 { fill: var(--ff-c6); background-color: var(--ff-c6); }
+.ff-c7 { fill: var(--ff-c7); background-color: var(--ff-c7); }
+.ff-c8 { fill: var(--ff-c8); background-color: var(--ff-c8); }
+.ff-c9 { fill: var(--ff-c9); background-color: var(--ff-c9); }
+
 .ff-donut-wrap {
 	display: flex;
 	align-items: center;
@@ -785,7 +796,12 @@
 }
 
 .ff-donut-seg:hover {
+	stroke-width: 42px;
 	filter: brightness(1.12);
+}
+
+.ff-tip-bold {
+	font-weight: 600;
 }
 
 .ff-chart-legend {

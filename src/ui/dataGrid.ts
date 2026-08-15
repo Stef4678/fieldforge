@@ -3,6 +3,7 @@
  * click-to-open, CSV + Markdown export.
  */
 
+import { Notice } from "obsidian";
 import { FieldInfo, VaultRow, displayValue, formatNumber, getFieldValue } from "../data/schema";
 import { renderEmpty } from "./charts";
 
@@ -150,10 +151,9 @@ export class DataGridUI {
 		try {
 			const blob = new Blob([content], { type: "text/csv;charset=utf-8;" });
 			const url = URL.createObjectURL(blob);
-			const a = document.createElement("a");
-			a.href = url;
-			a.download = filename;
+			const a = document.body.createEl("a", { attr: { href: url, download: filename } });
 			a.click();
+			a.remove();
 			URL.revokeObjectURL(url);
 		} catch {
 			void this.copyText(content);
@@ -163,9 +163,8 @@ export class DataGridUI {
 	private async copyText(text: string): Promise<void> {
 		try {
 			await navigator.clipboard.writeText(text);
-			// eslint-disable-next-line no-console
-		} catch (e) {
-			console.error("FieldForge: clipboard failed", e);
+		} catch {
+			new Notice("FieldForge: could not copy to clipboard.");
 		}
 	}
 }

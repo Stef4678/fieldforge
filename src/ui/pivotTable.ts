@@ -5,7 +5,7 @@
 
 import { PivotConfig, PivotResult } from "../data/pivot";
 import { fieldLabel, formatNumber } from "../data/schema";
-import { ChartColors, escapeHtml, renderEmpty } from "./charts";
+import { ChartColors, fillTip, renderEmpty } from "./charts";
 
 export function renderPivotTable(
 	container: HTMLElement,
@@ -54,20 +54,19 @@ export function renderPivotTable(
 				td.addClass("ff-cell-hasfiles");
 				td.setAttr("data-count", String(count));
 				td.addEventListener("mouseenter", () => {
-					const tip = wrap.querySelector(".ff-tooltip") as HTMLElement | null;
+					const tip = wrap.find(".ff-tooltip");
 					if (!tip) return;
-					const list = files
-						.slice(0, 8)
-						.map((p) => {
-							const name = p.split("/").pop() ?? p;
-							return `<div class="ff-tip-file">${escapeHtml(name)}</div>`;
-						})
-						.join("");
-					tip.innerHTML = `<b>${escapeHtml(rowKeys[i])}${colKeys[j] ? " · " + escapeHtml(colKeys[j]) : ""}</b><div class="ff-tip-files">${list}${files.length > 8 ? `<div class="ff-tip-more">+ ${files.length - 8} more</div>` : ""}</div>`;
+					fillTip(tip, [{ text: `${rowKeys[i]}${colKeys[j] ? " · " + colKeys[j] : ""}`, bold: true }]);
+					for (const p of files.slice(0, 8)) {
+						tip.createDiv({ cls: "ff-tip-file", text: p.split("/").pop() ?? p });
+					}
+					if (files.length > 8) {
+						tip.createDiv({ cls: "ff-tip-more", text: `+ ${files.length - 8} more` });
+					}
 					tip.classList.add("is-visible");
 				});
 				td.addEventListener("mousemove", (e) => {
-					const tip = wrap.querySelector(".ff-tooltip") as HTMLElement | null;
+					const tip = wrap.find(".ff-tooltip");
 					if (!tip) return;
 					const parentRect = wrap.getBoundingClientRect();
 					const r = tip.getBoundingClientRect();
@@ -79,8 +78,7 @@ export function renderPivotTable(
 					tip.style.top = `${top}px`;
 				});
 				td.addEventListener("mouseleave", () => {
-					const tip = wrap.querySelector(".ff-tooltip") as HTMLElement | null;
-					tip?.classList.remove("is-visible");
+					wrap.find(".ff-tooltip")?.classList.remove("is-visible");
 				});
 				td.addEventListener("click", () => openFile(files[0]));
 			}
@@ -108,8 +106,7 @@ export function renderPivotTable(
 	}
 
 	// Shared tooltip element for the table
-	const tip = wrap.createDiv({ cls: "ff-tooltip" });
-	void tip;
+	wrap.createDiv({ cls: "ff-tooltip" });
 }
 
 /* ------------------------------------------------------------------ */

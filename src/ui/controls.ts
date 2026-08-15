@@ -127,7 +127,7 @@ export function renderControls(container: HTMLElement, api: ControlsApi): void {
 			opSel.value = f.op;
 			const valInput = row.createEl("input", {
 				cls: "ff-input ff-filter-value",
-				attr: { placeholder: "value", type: "text" },
+				attr: { placeholder: "Value", type: "text" },
 			});
 			valInput.value = f.value;
 			const needsValue = f.op !== "exists" && f.op !== "not-exists";
@@ -143,7 +143,7 @@ export function renderControls(container: HTMLElement, api: ControlsApi): void {
 			rm.addEventListener("click", () => api.onRemoveFilter(i));
 		});
 	}
-	const add = flt.createEl("button", { cls: "ff-btn ff-btn-outline", text: "+ Add filter" });
+	const add = flt.createEl("button", { cls: "ff-btn ff-btn-outline", text: "Add filter" });
 	add.addEventListener("click", () => api.onAddFilter());
 
 	/* ---------- Sort & limit ---------- */
